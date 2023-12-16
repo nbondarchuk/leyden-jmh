@@ -11,6 +11,7 @@ import java.util.*;
 public class JavacBench {
 
     static class ClassFile extends SimpleJavaFileObject {
+
         private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
         protected ClassFile(String name) {
@@ -28,7 +29,8 @@ public class JavacBench {
     }
 
     static class FileManager extends ForwardingJavaFileManager<JavaFileManager> {
-        private Map<String, ClassFile> classesMap = new HashMap<String, ClassFile>();
+
+        private final Map<String, ClassFile> classesMap = new HashMap<>();
 
         protected FileManager(JavaFileManager fileManager) {
             super(fileManager);
@@ -51,7 +53,8 @@ public class JavacBench {
     }
 
     static class SourceFile extends SimpleJavaFileObject {
-        private CharSequence sourceCode;
+
+        private final CharSequence sourceCode;
 
         public SourceFile(String name, CharSequence sourceCode) {
             super(URI.create("memo:///" + name.replace('.', '/') + Kind.SOURCE.extension), Kind.SOURCE);
@@ -67,14 +70,15 @@ public class JavacBench {
     @State(Scope.Benchmark)
     public static class JavaBenchState {
 
-        @Param({"100"})
+        @Param({"250"})
         int count;
 
-        List<SourceFile> sources10k;
+        List<SourceFile> sources;
 
         @Setup(Level.Invocation)
+        @SuppressWarnings("unused")
         public void setup() {
-            List<SourceFile> sources = new ArrayList<>(10_000);
+            List<SourceFile> sources = new ArrayList<>(count);
             for (int i = 0; i < count; i++) {
                 sources.add(new SourceFile("HelloWorld" + i,
                         "public class HelloWorld" + i + " {" +
@@ -83,19 +87,20 @@ public class JavacBench {
                                 "    }" +
                                 "}"));
             }
-            sources10k = sources;
+            this.sources = sources;
         }
     }
 
     @Benchmark
     @Warmup(iterations = 0)
-    @Measurement(iterations = 15)
+    @Measurement(iterations = 20)
     @Fork(value = 0, warmups = 0)
     @BenchmarkMode(Mode.SingleShotTime)
+    @SuppressWarnings("unused")
     public Object compile(JavaBenchState state) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         DiagnosticCollector<JavaFileObject> ds = new DiagnosticCollector<>();
-        Collection<SourceFile> sourceFiles = state.sources10k.subList(0, state.count);
+        Collection<SourceFile> sourceFiles = state.sources.subList(0, state.count);
 
         try (FileManager fileManager = new FileManager(compiler.getStandardFileManager(ds, null, null))) {
             JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, null, List.of("-Xlint:-options"), null, sourceFiles);
@@ -112,7 +117,7 @@ public class JavacBench {
         }
     }
 
-    public static void main(String args[]) throws Exception {
+    public static void main(String[] args) throws Exception {
         org.openjdk.jmh.Main.main(args);
     }
 }

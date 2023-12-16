@@ -45,28 +45,26 @@ ${CACHED_CODE}: ${DYNAMIC_JSA}
 run: ${CACHED_CODE}
 	echo Running with AOT code
 	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} -XX:+ReplayTraining -XX:+LoadCachedCode \
-		-XX:CachedCodeFile=${CACHED_CODE} -Xlog:init -Xlog:scc=error -jar ${APP_JAR}
+		-XX:CachedCodeFile=${CACHED_CODE} -Xlog:scc=error -jar ${APP_JAR}
 
 # run with just static CDS archive
 runs: ${STATIC_JSA}
 	echo Running with static archive
-	${PREMAIN_JAVA} -XX:SharedArchiveFile=${STATIC_JSA} \
-		-Xlog:init -jar ${APP_JAR}
+	${PREMAIN_JAVA} -XX:SharedArchiveFile=${STATIC_JSA} -jar ${APP_JAR}
 
 # run with just dynamic CDS archive
 rund: ${DYNAMIC_JSA}
 	echo Running with dynamic archive
-	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} \
-		-Xlog:init -jar ${APP_JAR}
+	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} -jar ${APP_JAR}
 
 # run WITHOUT premain optimization
 run0: ${APP_JAR}
 	echo Running with premain JDK WITHOUT optimizations
-	${PREMAIN_JAVA} -Xlog:init -jar ${APP_JAR}
+	${PREMAIN_JAVA} -jar ${APP_JAR}
 
 run21: ${APP_JAR}
 	echo Running with mainline JDK WITHOUT optimizations
-	${MAINLINE_JAVA} -Xlog:init -jar ${APP_JAR}
+	${MAINLINE_JAVA} -jar ${APP_JAR}
 
 clean:
 	rm -rf target
