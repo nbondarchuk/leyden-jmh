@@ -16,7 +16,7 @@ ${APP_JAR}:
 
 ${CLASSLIST}: ${APP_JAR}
 	echo Dumping loaded class list
-	${PREMAIN_JAVA} -Xshare:off -XX:DumpLoadedClassList=${CLASSLIST} -jar ${APP_JAR}
+	${PREMAIN_JAVA} -Xshare:off -XX:DumpLoadedClassList=${CLASSLIST} -cp ${APP_JAR} -jar ${APP_JAR}
 
 ${STATIC_JSA}: ${CLASSLIST}
 	echo Creating static archive
