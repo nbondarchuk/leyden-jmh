@@ -7,10 +7,10 @@ MAINLINE_JAVA = ${MAINLINE_HOME}/bin/java
 JAR_CMD       = ${MAINLINE_HOME}/bin/jar
 APP_JAR       = target/leyden-jmh-1.0-SNAPSHOT-jar-with-dependencies.jar
 
-CLASSLIST     = jmh-javac.classlist
-STATIC_JSA    = jmh-javac.static.jsa
-DYNAMIC_JSA   = jmh-javac.dynamic.jsa
-CACHED_CODE   = jmh-javac.code.jsa
+CLASSLIST     = target/jmh-javac.classlist
+STATIC_JSA    = target/jmh-javac.static.jsa
+DYNAMIC_JSA   = target/jmh-javac.dynamic.jsa
+CACHED_CODE   = target/jmh-javac.code.jsa
 
 ${APP_JAR}:
 	mvn package
