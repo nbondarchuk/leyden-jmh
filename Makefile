@@ -21,7 +21,8 @@ ${CLASSLIST}: ${APP_JAR}
 ${STATIC_JSA}: ${CLASSLIST}
 	echo Creating static archive
 	rm -f ${STATIC_JSA}.log
-	${PREMAIN_JAVA} -Xshare:dump -XX:SharedArchiveFile=${STATIC_JSA} -XX:SharedClassListFile=${CLASSLIST} -cp ${APP_JAR} \
+	${PREMAIN_JAVA} -Xshare:dump -XX:SharedArchiveFile=${STATIC_JSA} -XX:SharedClassListFile=${CLASSLIST} \
+		-XX:+PreloadSharedClasses -cp ${APP_JAR} \
 	    -Xlog:cds=debug,cds+class=debug,cds+heap=warning,cds+resolve=debug:file=${STATIC_JSA}.log
 
 clean:
