@@ -87,9 +87,10 @@ public class JavacBench {
         }
     }
 
-    @Fork(value = 1, warmups = 0)
     @Benchmark
-    @Warmup(iterations = 20)
+    @Warmup(iterations = 0)
+    @Measurement(iterations = 15)
+    @Fork(value = 0, warmups = 0)
     @BenchmarkMode(Mode.SingleShotTime)
     public Object compile(JavaBenchState state) {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
