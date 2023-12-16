@@ -1,0 +1,11 @@
+/.idea/*
+!/.idea/runConfigurations/
+
+/bin
+.project
+.classpath
+/**/.env
+/**/*.iml
+/**/target/
+/.settings
+/.DS_Store
