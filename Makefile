@@ -36,6 +36,7 @@ ${DYNAMIC_JSA}: ${STATIC_JSA}
 
 ${CACHED_CODE}: ${DYNAMIC_JSA}
 	echo Generating AOT code
+	rm -f ${CACHED_CODE}
 	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} -XX:+ReplayTraining -XX:+StoreCachedCode \
 	     -XX:CachedCodeFile=${CACHED_CODE} -XX:CachedCodeMaxSize=512M -jar ${APP_JAR}
 
