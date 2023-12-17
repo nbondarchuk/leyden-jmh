@@ -70,7 +70,7 @@ public class JavacBench {
     @State(Scope.Benchmark)
     public static class JavaBenchState {
 
-        @Param({"250"})
+        @Param({"100"})
         int count;
 
         List<SourceFile> sources;
