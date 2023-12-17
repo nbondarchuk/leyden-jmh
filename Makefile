@@ -12,6 +12,19 @@ STATIC_JSA    = target/jmh-javac.static.jsa
 DYNAMIC_JSA   = target/jmh-javac.dynamic.jsa
 CACHED_CODE   = target/jmh-javac.code.jsa
 
+MAINLINE_RUN_LOG       = target/run21.log
+MAINLINE_RUN_REPORT    = target/run21.report
+PREMAIN_RUN_LOG        = target/run0.log
+PREMAIN_RUN_REPORT     = target/run0.report
+STATIC_JSA_RUN_LOG     = target/runs.log
+STATIC_JSA_RUN_REPORT  = target/runs.report
+DYNAMIC_JSA_RUN_LOG    = target/rund.log
+DYNAMIC_JSA_RUN_REPORT = target/rund.report
+CACHED_CODE_RUN_LOG    = target/run.log
+CACHED_CODE_RUN_REPORT = target/run.report
+
+RUN_ALL_REPORT = target/run-all.report
+
 ${APP_JAR}:
 	mvn package
 
@@ -25,7 +38,6 @@ ${STATIC_JSA}: ${CLASSLIST}
 	${PREMAIN_JAVA} -Xshare:dump -XX:SharedArchiveFile=${STATIC_JSA} -XX:SharedClassListFile=${CLASSLIST} \
 		-XX:+PreloadSharedClasses -XX:+ArchiveInvokeDynamic -cp ${APP_JAR} \
 	    -Xlog:cds=debug,cds+class=debug,cds+heap=warning,cds+resolve=debug:file=${STATIC_JSA}.log
-#	${PREMAIN_JAVA} -XX:SharedArchiveFile=${STATIC_JSA} -jar ${APP_JAR}
 
 ${DYNAMIC_JSA}: ${STATIC_JSA}
 	echo Creating dynamic archive
@@ -44,27 +56,42 @@ ${CACHED_CODE}: ${DYNAMIC_JSA}
 # run with premain optimization
 run: ${CACHED_CODE}
 	echo Running with AOT code
+	rm -f ${CACHED_CODE_RUN_LOG} ${CACHED_CODE_RUN_REPORT}
 	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} -XX:+ReplayTraining -XX:+LoadCachedCode \
-		-XX:CachedCodeFile=${CACHED_CODE} -Xlog:scc=error -jar ${APP_JAR}
+		-XX:CachedCodeFile=${CACHED_CODE} -Xlog:scc=error -jar ${APP_JAR} > ${CACHED_CODE_RUN_LOG}
+	echo "Running with AOT code" >> ${CACHED_CODE_RUN_REPORT}
+	grep Iteration ${CACHED_CODE_RUN_LOG} >> ${CACHED_CODE_RUN_REPORT}
 
 # run with just static CDS archive
 runs: ${STATIC_JSA}
 	echo Running with static archive
-	${PREMAIN_JAVA} -XX:SharedArchiveFile=${STATIC_JSA} -jar ${APP_JAR}
+	rm -f ${STATIC_JSA_RUN_LOG} ${STATIC_JSA_RUN_REPORT}
+	${PREMAIN_JAVA} -XX:SharedArchiveFile=${STATIC_JSA} -jar ${APP_JAR} > ${STATIC_JSA_RUN_LOG}
+	echo "Running with static archive" >> ${STATIC_JSA_RUN_REPORT}
+	grep Iteration ${STATIC_JSA_RUN_LOG} >> ${STATIC_JSA_RUN_REPORT}
 
 # run with just dynamic CDS archive
 rund: ${DYNAMIC_JSA}
 	echo Running with dynamic archive
-	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} -jar ${APP_JAR}
+	rm -f ${DYNAMIC_JSA_RUN_LOG} ${DYNAMIC_JSA_RUN_REPORT}
+	${PREMAIN_JAVA} -XX:SharedArchiveFile=${DYNAMIC_JSA} -jar ${APP_JAR} > ${DYNAMIC_JSA_RUN_LOG}
+	echo "Running with dynamic archive" >> ${DYNAMIC_JSA_RUN_REPORT}
+	grep Iteration ${DYNAMIC_JSA_RUN_LOG} >> ${DYNAMIC_JSA_RUN_REPORT}
 
 # run WITHOUT premain optimization
 run0: ${APP_JAR}
 	echo Running with premain JDK WITHOUT optimizations
-	${PREMAIN_JAVA} -jar ${APP_JAR}
+	rm -f ${PREMAIN_RUN_LOG} ${PREMAIN_RUN_REPORT}
+	${PREMAIN_JAVA} -jar ${APP_JAR} > ${PREMAIN_RUN_LOG}
+	echo "Running with premain JDK WITHOUT optimizations" >> ${PREMAIN_RUN_REPORT}
+	grep Iteration ${PREMAIN_RUN_LOG} >> ${PREMAIN_RUN_REPORT}
 
 run21: ${APP_JAR}
 	echo Running with mainline JDK WITHOUT optimizations
-	${MAINLINE_JAVA} -jar ${APP_JAR}
+	rm -f ${MAINLINE_RUN_LOG} ${MAINLINE_RUN_REPORT}
+	${MAINLINE_JAVA} -jar ${APP_JAR} > ${MAINLINE_RUN_LOG}
+	echo "Running with mainline JDK WITHOUT optimizations" >> ${MAINLINE_RUN_REPORT}
+	grep Iteration ${MAINLINE_RUN_LOG} >> ${MAINLINE_RUN_REPORT}
 
 clean:
 	rm -rf target
@@ -78,4 +105,20 @@ aot: ${CACHED_CODE}
 
 all: app aot
 
-runAll: run runs rund run0 run21
+runAll: run0 run21 runs rund run
+	rm -f ${RUN_ALL_REPORT}
+
+	cat ${MAINLINE_RUN_REPORT} >> ${RUN_ALL_REPORT}
+	echo "" >> ${RUN_ALL_REPORT}
+
+	cat ${PREMAIN_RUN_REPORT} >> ${RUN_ALL_REPORT}
+	echo "" >> ${RUN_ALL_REPORT}
+
+	cat ${STATIC_JSA_RUN_REPORT} >> ${RUN_ALL_REPORT}
+	echo "" >> ${RUN_ALL_REPORT}
+
+	cat ${DYNAMIC_JSA_RUN_REPORT} >> ${RUN_ALL_REPORT}
+	echo "" >> ${RUN_ALL_REPORT}
+
+	cat ${CACHED_CODE_RUN_REPORT} >> ${RUN_ALL_REPORT}
+	echo "" >> ${RUN_ALL_REPORT}
