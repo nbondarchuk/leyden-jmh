@@ -12,6 +12,8 @@ STATIC_JSA    = target/jmh-javac.static.jsa
 DYNAMIC_JSA   = target/jmh-javac.dynamic.jsa
 CACHED_CODE   = target/jmh-javac.code.jsa
 
+NO_CDS_RUN_LOG         = target/runx.log
+NO_CDS_RUN_REPORT      = target/runx.report
 MAINLINE_RUN_LOG       = target/run21.log
 MAINLINE_RUN_REPORT    = target/run21.report
 PREMAIN_RUN_LOG        = target/run0.log
@@ -62,7 +64,7 @@ run: ${CACHED_CODE}
 	echo "Running with AOT code" >> ${CACHED_CODE_RUN_REPORT}
 	grep Iteration ${CACHED_CODE_RUN_LOG} >> ${CACHED_CODE_RUN_REPORT}
 
-# run with just static CDS archive
+# run with static CDS archive
 runs: ${STATIC_JSA}
 	echo Running with static archive
 	rm -f ${STATIC_JSA_RUN_LOG} ${STATIC_JSA_RUN_REPORT}
@@ -70,7 +72,7 @@ runs: ${STATIC_JSA}
 	echo "Running with static archive" >> ${STATIC_JSA_RUN_REPORT}
 	grep Iteration ${STATIC_JSA_RUN_LOG} >> ${STATIC_JSA_RUN_REPORT}
 
-# run with just dynamic CDS archive
+# run with dynamic CDS archive
 rund: ${DYNAMIC_JSA}
 	echo Running with dynamic archive
 	rm -f ${DYNAMIC_JSA_RUN_LOG} ${DYNAMIC_JSA_RUN_REPORT}
@@ -78,13 +80,21 @@ rund: ${DYNAMIC_JSA}
 	echo "Running with dynamic archive" >> ${DYNAMIC_JSA_RUN_REPORT}
 	grep Iteration ${DYNAMIC_JSA_RUN_LOG} >> ${DYNAMIC_JSA_RUN_REPORT}
 
-# run WITHOUT premain optimization
+# run with default CDS archive (no premain optimization)
 run0: ${APP_JAR}
 	echo Running with premain JDK WITHOUT optimizations
 	rm -f ${PREMAIN_RUN_LOG} ${PREMAIN_RUN_REPORT}
 	${PREMAIN_JAVA} -jar ${APP_JAR} > ${PREMAIN_RUN_LOG}
 	echo "Running with premain JDK WITHOUT optimizations" >> ${PREMAIN_RUN_REPORT}
 	grep Iteration ${PREMAIN_RUN_LOG} >> ${PREMAIN_RUN_REPORT}
+
+# run with CDS turned off
+runx: ${APP_JAR}
+	echo Running with CDS turned off
+	rm -f ${NO_CDS_RUN_LOG} ${NO_CDS_RUN_REPORT}
+	${PREMAIN_JAVA} -Xshare:off -jar ${APP_JAR} > ${NO_CDS_RUN_LOG}
+	echo "Running with CDS turned off" >> ${NO_CDS_RUN_REPORT}
+	grep Iteration ${NO_CDS_RUN_LOG} >> ${NO_CDS_RUN_REPORT}
 
 run21: ${APP_JAR}
 	echo Running with mainline JDK WITHOUT optimizations
@@ -105,10 +115,10 @@ aot: ${CACHED_CODE}
 
 all: app aot
 
-runAll: run0 run21 runs rund run
+runAll: runx run0 runs rund run
 	rm -f ${RUN_ALL_REPORT}
 
-	cat ${MAINLINE_RUN_REPORT} >> ${RUN_ALL_REPORT}
+	cat ${NO_CDS_RUN_REPORT} >> ${RUN_ALL_REPORT}
 	echo "" >> ${RUN_ALL_REPORT}
 
 	cat ${PREMAIN_RUN_REPORT} >> ${RUN_ALL_REPORT}
