@@ -1,0 +1,1 @@
+docker run --rm -it --entrypoint bash -v $(pwd)/data:/opt/leyden leyden-jmh

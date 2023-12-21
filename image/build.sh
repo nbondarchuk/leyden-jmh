@@ -1,0 +1,1 @@
+docker build -t leyden-jmh -f src/Dockerfile src
